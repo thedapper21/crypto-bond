@@ -6,10 +6,11 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract CryptoBond {
 
-    mapping(address => uint256) public addressToAmountFunded;
+    mapping(address => uint256) addressToAmountFunded;
     address owner;
+    address[] funder;
 
-    constructor() public {
+    constructor() public  {
         owner = msg.sender;
     }
 
@@ -36,6 +37,7 @@ contract CryptoBond {
         uint256 minimumUSD = 10 * 10 ** 18;
         require(getConversionRate(msg.value) >= minimumUSD, "You need to spend more ETH!"); // reverts the transaction and sends money back
         addressToAmountFunded[msg.sender] += msg.value;
+        funder.push(msg.sender);
     }
 
     modifier onlyOwner {
@@ -45,10 +47,11 @@ contract CryptoBond {
 
     function withdrawPool() public onlyOwner payable {
         payable(msg.sender).transfer(address(this).balance);
+        funder = new address[](0);
     }
 
-    function poolBalance() public view returns (uint256) {
-        return address(this).balance;
+    function getFundedAmount() public view returns (uint256) {
+        return addressToAmountFunded[msg.sender];
     }
 
 }
